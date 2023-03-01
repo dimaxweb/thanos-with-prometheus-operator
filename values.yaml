@@ -1,0 +1,170 @@
+name: "metrics"
+verion: "ast-metrics"
+production: false
+mock_component: false
+component:
+  replicaCount: 1
+springProfile: production
+dataAnalyticsApi:
+  discovryName: "data-analytics-api"
+  port: 6688
+  grpcPort: 5836
+astMetrics:
+  discovryName: "ast-metrics"
+  port: 8888
+  grpcPort: 5436
+  rabbitmq:
+    #rabbit client reconnect interval 30000 milliseconds = 30 seconds
+    # 30 seconds * 40 times = 20 min
+    reconnectInterval: 30000
+    reconnectAttempts: 40
+    scansSubject: "events.scans.scan.#"
+    exchangeType: "topic"
+    exchange: "amq.topic"
+    durable: true
+    queueName: "ast-metrics.q"
+    logsRoutingKey: "events.ast-metrics.scan.#"
+    logsQueueName: "ast-metrics.logs.q"
+    messageTtl: 60000
+    # prometheus:
+    #   namespace: ""
+    #   suffix: ""
+    #   ns_monitor: "monitoring"
+    #   params:
+    #   - name: ast-metrics-actuator
+    #     path: "/actuator/actuator"
+    #   - name: ast-metrics-dynamic
+    #     path: "/actuator/dynamic"
+astAnalyticsMfe:
+  name: "ast-analytics-mfe"
+  discovryName: "ast-analytics-mfe"
+  port: 80
+  scale:
+    replicaCount: ""
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: ""
+      memory: ""
+    limits:
+      cpu: ""
+      memory: ""
+ast_metrics:
+  image:
+    tag: "3389747"
+  scale:
+    replicaCount: ""
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: ""
+      memory: ""
+    limits:
+      cpu: ""
+      memory: ""
+ast_analytics_mfe:
+  image:
+    tag: 6f2def9
+data_analytics_api:
+  image:
+    tag: "e1e7b45"
+  scale:
+    replicaCount: ""
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 20
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: ""
+      memory: ""
+    limits:
+      cpu: ""
+      memory: ""
+services:
+  ast_metrics:
+    github:
+      url: https://github.com/CheckmarxDev/ast-metrics
+    image:
+      registry: checkmarx.jfrog.io/docker
+      repoName: ast-metrics
+      tag: 38dd238
+    name: ast-metrics
+  ast_analytics_mfe:
+    github:
+      url: https://github.com/CheckmarxDev/ast-analytics-mfe
+    image:
+      registry: checkmarx.jfrog.io/docker
+      repoName: ast-analytics-mfe
+      tag: fd6b93b
+    name: ast-analytics-mfe
+  data_analytics_api:
+    github:
+      url: https://github.com/CheckmarxDev/data-analytics-api
+    image:
+      registry: checkmarx.jfrog.io/docker
+      repoName: data-analytics-api
+      tag: 04905db
+    name: data-analytics-api
+scans:
+  grpcAddr: "dns:///scans:26501"
+sast_metadata:
+  grpcAddr: "dns:///sast-metadata:26500"
+projects:
+  grpcAddr: "dns:///scans:26502"
+applications:
+  grpcAddr: "dns:///scans:26503"
+featureflag:
+  grpcAddr: "dns:///flags:26500"
+analytics:
+  grpcAddr: "dns:///data-analytics-api:5836"
+core:
+  results:
+    grpcAddr: "dns:///ast-results:26500"
+prometheus:
+  monitoring_namespace: ""
+  test:
+    adress: ""
+thanos:
+  prometheus:
+    replicas: 1
+    resources:
+      limits:
+        memmory: 4000Mi
+      requests:
+        memory: 3000Mi
+    tsdbPath: "/var/prometheus/data"
+    volumeName: "data-prometheus"
+  secret:
+    name: "thanos-objstore-config"
+    key: "thanos.yaml"
+  storageConfig:
+    bucket: "thanos"
+    endpoint: "s3.eu-west-1.amazonaws.com"
+    trace:
+      enabled: true
+  query:
+    httpPort: 9090
+    grpcPort: 10901
+    image: quay.io/thanos/thanos:v0.28.1
+    address: "http://thanos-query-service"
+  store:
+    httpPort: 10902
+    grpcPort: 10901
+    image: quay.io/thanos/thanos:v0.28.1
+  serviceAccountName: "thanos-s3"
+  queryServiceAccountName: "thanos-query"
+  clusterRoleName: "prometheus"
+  production: false
