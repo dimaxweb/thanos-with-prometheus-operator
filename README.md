@@ -1,6 +1,3 @@
-# AST Metrics Component 
-![AST Metrics Component](docs/service-diagramm.png "AST Metrics Component")
-
 # Installation Instruction
 
    Prerequisites : Install new cluster 
